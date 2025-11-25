@@ -70,7 +70,7 @@ public class OmikujiServiceImpl
 
     @Override
     public OmikujiResult getOmikujiById(Integer id) {
-        // 1. 从数据库取一条扁平记录
+        // 1. 从数据库取一条记录
         OmikujiRecord record = this.getById(id);
         if (record == null) {
             return null;
