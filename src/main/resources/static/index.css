@@ -1,0 +1,300 @@
+/* =========================
+   Omikuji Responsive CSS
+   Target: Omikuji.html structure
+   ========================= */
+
+/* ---- Theme tokens ---- */
+:root{
+    --bg: #f6f1e6;          /* 和纸底色 */
+    --ink: #2b2b2b;         /* 墨色文字 */
+    --muted: #5b5b5b;       /* 次要文字 */
+    --red: #b82e2e;         /* 朱色 */
+    --gold: #d6b15e;        /* 金 */
+    --paper: rgba(255,255,255,.78);
+    --shadow: 0 10px 30px rgba(0,0,0,.10);
+    --radius: 14px;
+    --gap: 14px;
+}
+
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+body{
+    margin: 0;
+    background:
+            radial-gradient(1200px 600px at 20% -10%, rgba(214,177,94,.18), transparent 60%),
+            radial-gradient(900px 500px at 110% 10%, rgba(184,46,46,.10), transparent 60%),
+            linear-gradient(180deg, var(--bg), #efe7d8);
+    color: var(--ink);
+    font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+    line-height: 1.75;
+    padding: 18px 12px;
+}
+
+/* subtle paper noise */
+body::before{
+    content:"";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+            radial-gradient(rgba(0,0,0,.035) 1px, transparent 1px);
+    background-size: 22px 22px;
+    opacity: .25;
+}
+
+/* ---- Card wrapper ---- */
+.wrap{
+    width: min(980px, 100%);
+    margin: 0 auto;
+    background: var(--paper);
+    backdrop-filter: blur(6px);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 2px solid rgba(217,210,198,.9);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Top decorative border */
+.wrap::before{
+    content:"";
+    position:absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 10px;
+    background: linear-gradient(90deg, rgba(184,46,46,.95), rgba(214,177,94,.95), rgba(184,46,46,.95));
+}
+
+/* ---- Common section styles ---- */
+.fortune,
+.wish, .love, .study, .health, .business,
+.gotouchi1, .gotouchi2{
+    padding: 14px 16px;
+}
+
+.wish, .love, .study, .health, .business,
+.gotouchi1, .gotouchi2{
+    border-top: 2px dashed rgba(232,226,216,.95);
+}
+
+h1, h2{
+    margin: 0;
+}
+
+.fortune{
+    padding-top: 18px;
+    text-align: center;
+    background: rgba(255,225,0,.07);
+}
+
+.fortune h1{
+    font-size: clamp(28px, 4.5vw, 44px);
+    letter-spacing: .22em;
+    color: var(--red);
+    text-shadow: 0 1px 0 rgba(255,255,255,.45);
+}
+
+h2{
+    display: inline-block;
+    font-size: 18px;
+    letter-spacing: .08em;
+    color: var(--red);
+    padding-bottom: 6px;
+    border-bottom: 2px solid rgba(184,46,46,.35);
+    margin-bottom: 10px;
+}
+
+p{
+    margin: 0;
+    color: var(--ink);
+    font-size: 15px;
+}
+
+/* make long text readable */
+.wish p, .love p, .study p, .health p, .business p{
+    color: var(--muted);
+}
+
+/* ---- Mobile first: single column, horizontal, easy reading ---- */
+.wrap{
+    display: block;
+}
+
+/* Lucky items look like small chips on mobile */
+.gotouchi1 p, .gotouchi2 p{
+    font-weight: 700;
+    color: var(--ink);
+}
+
+/* ---- Tablet/Desktop layout ---- */
+@media (min-width: 768px){
+    body{ padding: 26px 16px; }
+
+    .wrap{
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-areas:
+                "fortune fortune fortune fortune fortune"
+                "wish    love    study   health  business"
+                "spot    spot    spot    food    food";
+    }
+
+    .fortune{ grid-area: fortune; }
+
+    .wish{ grid-area: wish; }
+    .love{ grid-area: love; }
+    .study{ grid-area: study; }
+    .health{ grid-area: health; }
+    .business{ grid-area: business; }
+
+    .gotouchi1{ grid-area: spot; }
+    .gotouchi2{ grid-area: food; }
+
+    /* remove dashed top borders inside grid cells; use subtle separators instead */
+    .wish, .love, .study, .health, .business, .gotouchi1, .gotouchi2{
+        border-top: none;
+        border-left: 1px solid rgba(232,226,216,.95);
+    }
+    .wish{ border-left: none; }
+
+    /* give each column a "strip" feel */
+    .wish, .love, .study, .health, .business{
+        background: rgba(255,250,229,.35);
+        min-height: 360px;
+    }
+
+    /* ==== Desktop "omikuji vibe": vertical writing ONLY on desktop ==== */
+    .wish, .love, .study, .health, .business{
+        writing-mode: vertical-rl;
+        text-orientation: upright;
+        padding: 18px 14px;
+    }
+    .wish h2, .love h2, .study h2, .health h2, .business h2{
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 12px;
+        letter-spacing: .18em;
+    }
+    .wish p, .love p, .study p, .health p, .business p{
+        font-size: 13px;
+        letter-spacing: .08em;
+        line-height: 1.9;
+    }
+
+    /* Lucky sections keep horizontal for clarity */
+    .gotouchi1, .gotouchi2{
+        writing-mode: horizontal-tb;
+        background: rgba(255,225,0,.06);
+    }
+}
+
+/* ---- Large desktop polish ---- */
+@media (min-width: 1024px){
+    .wrap{
+        border-width: 2px;
+    }
+    .wish, .love, .study, .health, .business{
+        min-height: 420px;
+    }
+}
+
+/* ---- Accessibility: reduce motion (even if we add animations later) ---- */
+@media (prefers-reduced-motion: reduce){
+    *{ scroll-behavior: auto !important; }
+}
+
+
+/* =========================
+   Mobile演出：fade-up + 点击高亮
+   Append to the end of index.css
+   ========================= */
+
+/* --- Fade-up animation --- */
+@keyframes fadeUp{
+    from{
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to{
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 默认都先隐藏一点点，等动画出现 */
+.wrap > div{
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeUp .55s ease-out forwards;
+}
+
+/* 依次出现的延迟（你HTML顺序固定） */
+.wrap > .fortune{ animation-delay: .05s; }
+.wrap > .wish{ animation-delay: .14s; }
+.wrap > .love{ animation-delay: .22s; }
+.wrap > .study{ animation-delay: .30s; }
+.wrap > .health{ animation-delay: .38s; }
+.wrap > .business{ animation-delay: .46s; }
+.wrap > .gotouchi1{ animation-delay: .54s; }
+.wrap > .gotouchi2{ animation-delay: .62s; }
+
+/* --- 点击高亮（可读性 + 仪式感）--- */
+.wish, .love, .study, .health, .business, .gotouchi1, .gotouchi2{
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, border-color .15s ease;
+    outline: none;
+}
+
+/* 轻微“按压反馈” */
+.wish:active, .love:active, .study:active, .health:active, .business:active, .gotouchi1:active, .gotouchi2:active{
+    transform: translateY(1px);
+}
+
+/* 激活态：浮起 + 高亮边框 + 轻微发光 */
+.is-active{
+    background: rgba(255, 255, 255, .92) !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,.14);
+    border-left-color: rgba(184,46,46,.55) !important;
+    position: relative;
+    z-index: 2;
+}
+
+/* 给激活块一个“印章角标”感（很轻微，不会太花） */
+.is-active::after{
+    content: "✓";
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+    background: rgba(184,46,46,.88);
+    box-shadow: 0 6px 16px rgba(184,46,46,.22);
+}
+
+/* 桌面端纵排时，激活角标位置微调 */
+@media (min-width: 768px){
+    .is-active::after{
+        top: 12px;
+        right: 10px;
+    }
+}
+
+/* 无障碍：用户不喜欢动画就禁用 */
+@media (prefers-reduced-motion: reduce){
+    .wrap > div{
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+    }
+    .wish, .love, .study, .health, .business, .gotouchi1, .gotouchi2{
+        transition: none !important;
+    }
+}
+
