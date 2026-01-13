@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -59,6 +61,7 @@ public class OmikujiServiceImpl
         record.setBusiness(content.getBusiness());
         record.setLuckyPlace(omikujiLuckyItem.getLuckyPlace());
         record.setNagoyaFood(omikujiLuckyItem.getNagoyaFood());
+        record.setFlag(0);
 
         // 存入数据库 and 获取id
         this.save(record);
@@ -100,4 +103,29 @@ public class OmikujiServiceImpl
 
         return result;
     }
+
+    @Override
+    public boolean markAsLuckyById(Integer id) {
+        if (id == null) {
+            return false;
+        }
+
+        return this.lambdaUpdate()
+                .eq(OmikujiRecord::getId, id)
+                .set(OmikujiRecord::getFlag, 1)
+                .update();
+    }
+
+
+    @Override
+    public List<Integer> getLuckyOmikujiIds() {
+        return this.lambdaQuery()
+                .select(OmikujiRecord::getId)
+                .eq(OmikujiRecord::getFlag, 1)
+                .list()
+                .stream()
+                .map(OmikujiRecord::getId)
+                .collect(Collectors.toList());
+    }
+
 }

@@ -28,7 +28,10 @@ public class OmikujiRecord {
     @TableField("nagoya_food")
     private String nagoyaFood;
 
-    public OmikujiRecord(Integer id, String rank, String love, String wish, String study, String health, String business, String luckyPlace, String nagoyaFood) {
+    @TableField("flag")
+    private Integer flag;
+
+    public OmikujiRecord(Integer id, String rank, String love, String wish, String study, String health, String business, String luckyPlace, String nagoyaFood, Integer flag) {
         this.id = id;
         this.rank = rank;
         this.love = love;
@@ -38,6 +41,15 @@ public class OmikujiRecord {
         this.business = business;
         this.luckyPlace = luckyPlace;
         this.nagoyaFood = nagoyaFood;
+        this.flag = flag;
+    }
+
+    public Integer getFlag() {
+        return flag;
+    }
+
+    public void setFlag(Integer flag) {
+        this.flag = flag;
     }
 
     public OmikujiRecord() {
@@ -115,6 +127,7 @@ public class OmikujiRecord {
         this.nagoyaFood = nagoyaFood;
     }
 
+
     @Override
     public String toString() {
         return "OmikujiRecord{" +
@@ -127,6 +140,7 @@ public class OmikujiRecord {
                 ", business='" + business + '\'' +
                 ", luckyPlace='" + luckyPlace + '\'' +
                 ", nagoyaFood='" + nagoyaFood + '\'' +
+                ", flag=" + flag +
                 '}';
     }
 }

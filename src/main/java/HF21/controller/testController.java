@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.List;
 
 
 @RestController
@@ -47,5 +48,32 @@ public class testController {
 
         return HttpResult.success("success",omikuji);
 
+    }
+
+
+    /**
+     * 根据 id 将签标记为「系上签」
+     */
+    @PostMapping("/musubu/{id}")
+    public HttpResult<Void> markAsLucky(@PathVariable Integer id) {
+
+        boolean success = omikujiService.markAsLuckyById(id);
+
+        if (!success) {
+            return HttpResult.error("error");
+        }
+
+        return HttpResult.success("結ばれた", null);
+    }
+
+    /**
+     * 获取所有「系上签」的 id
+     */
+    @GetMapping("/musubu/ids")
+    public HttpResult<List<Integer>> getLuckyOmikujiIds() {
+
+        List<Integer> ids = omikujiService.getLuckyOmikujiIds();
+
+        return HttpResult.success("success", ids);
     }
 }
