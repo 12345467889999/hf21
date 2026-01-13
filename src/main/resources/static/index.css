@@ -284,6 +284,8 @@ p{
         top: 12px;
         right: 10px;
     }
+
+
 }
 
 /* 无障碍：用户不喜欢动画就禁用 */
@@ -297,4 +299,45 @@ p{
         transition: none !important;
     }
 }
+
+/* =========================
+   Mobile bottom breathing space + paper fade edge
+   Append ONLY (no overwrite)
+   ========================= */
+
+@media (max-width: 767px){
+
+    /* 整个御神签底部安全留白 */
+    .wrap{
+        padding-bottom: 16px;
+        position: relative;
+    }
+    body{
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    /* 最后一块内容再多一点“收尾感” */
+    .gotouchi2{
+        padding-bottom: 16px;
+    }
+
+    /* 纸张渐隐底边（非常轻，不抢内容） */
+    .wrap::after{
+        content:"";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 34px;
+        pointer-events: none;
+        background: linear-gradient(
+                to bottom,
+                rgba(246,241,230,0),
+                rgba(246,241,230,.65),
+                rgba(246,241,230,1)
+        );
+    }
+}
+
 
