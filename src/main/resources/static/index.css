@@ -5,11 +5,11 @@
 
 /* ---- Theme tokens ---- */
 :root{
-    --bg: #f6f1e6;          /* 和纸底色 */
-    --ink: #2b2b2b;         /* 墨色文字 */
-    --muted: #5b5b5b;       /* 次要文字 */
-    --red: #b82e2e;         /* 朱色 */
-    --gold: #d6b15e;        /* 金 */
+    --bg: #f6f1e6;
+    --ink: #2b2b2b;
+    --muted: #5b5b5b;
+    --red: #b82e2e;
+    --gold: #d6b15e;
     --paper: rgba(255,255,255,.78);
     --shadow: 0 10px 30px rgba(0,0,0,.10);
     --radius: 14px;
@@ -206,7 +206,7 @@ p{
 
 
 /* =========================
-   Mobile演出：fade-up + 点击高亮
+   Mobile演出：fade-up
    Append to the end of index.css
    ========================= */
 
@@ -222,14 +222,12 @@ p{
     }
 }
 
-/* 默认都先隐藏一点点，等动画出现 */
 .wrap > div{
     opacity: 0;
     transform: translateY(10px);
     animation: fadeUp .55s ease-out forwards;
 }
 
-/* 依次出现的延迟（你HTML顺序固定） */
 .wrap > .fortune{ animation-delay: .05s; }
 .wrap > .wish{ animation-delay: .14s; }
 .wrap > .love{ animation-delay: .22s; }
@@ -239,19 +237,16 @@ p{
 .wrap > .gotouchi1{ animation-delay: .54s; }
 .wrap > .gotouchi2{ animation-delay: .62s; }
 
-/* --- 点击高亮（可读性 + 仪式感）--- */
 .wish, .love, .study, .health, .business, .gotouchi1, .gotouchi2{
     cursor: pointer;
     transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, border-color .15s ease;
     outline: none;
 }
 
-/* 轻微“按压反馈” */
 .wish:active, .love:active, .study:active, .health:active, .business:active, .gotouchi1:active, .gotouchi2:active{
     transform: translateY(1px);
 }
 
-/* 激活态：浮起 + 高亮边框 + 轻微发光 */
 .is-active{
     background: rgba(255, 255, 255, .92) !important;
     box-shadow: 0 12px 28px rgba(0,0,0,.14);
@@ -260,7 +255,6 @@ p{
     z-index: 2;
 }
 
-/* 给激活块一个“印章角标”感（很轻微，不会太花） */
 .is-active::after{
     content: "✓";
     position: absolute;
@@ -278,7 +272,6 @@ p{
     box-shadow: 0 6px 16px rgba(184,46,46,.22);
 }
 
-/* 桌面端纵排时，激活角标位置微调 */
 @media (min-width: 768px){
     .is-active::after{
         top: 12px;
@@ -288,7 +281,6 @@ p{
 
 }
 
-/* 无障碍：用户不喜欢动画就禁用 */
 @media (prefers-reduced-motion: reduce){
     .wrap > div{
         opacity: 1 !important;
@@ -307,7 +299,6 @@ p{
 
 @media (max-width: 767px){
 
-    /* 整个御神签底部安全留白 */
     .wrap{
         padding-bottom: 16px;
         position: relative;
@@ -317,12 +308,10 @@ p{
         margin-bottom: 15px;
     }
 
-    /* 最后一块内容再多一点“收尾感” */
     .gotouchi2{
         padding-bottom: 16px;
     }
 
-    /* 纸张渐隐底边（非常轻，不抢内容） */
     .wrap::after{
         content:"";
         position: absolute;
@@ -339,5 +328,85 @@ p{
         );
     }
 }
+
+/* =========================
+   Omikuji Action Buttons
+   ========================= */
+
+.omikuji-actions{
+    display: flex;
+    gap: 12px;
+    padding: 18px 16px 20px;
+    justify-content: center;
+    border-top: 2px dashed rgba(232,226,216,.95);
+    background: rgba(255,250,240,.55);
+}
+
+/*  共通　*/
+.omikuji-btn{
+    appearance: none;
+    border: none;
+    cursor: pointer;
+
+    padding: 10px 18px;
+    min-width: 120px;
+
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: .12em;
+
+    border-radius: 999px;
+    background: rgba(255,255,255,.85);
+    color: var(--ink);
+
+    box-shadow:
+            inset 0 0 0 1px rgba(184,46,46,.25),
+            0 6px 16px rgba(0,0,0,.12);
+
+    transition:
+            transform .15s ease,
+            box-shadow .15s ease,
+            background-color .15s ease;
+}
+
+/* 結ぶ */
+.tie-btn{
+    color: var(--red);
+    font-weight: 700;
+}
+
+/* 保存 */
+.save-btn{
+    box-shadow:
+            inset 0 0 0 1px rgba(214,177,94,.35),
+            0 6px 16px rgba(0,0,0,.12);
+}
+
+/* Hover / Active */
+.omikuji-btn:hover{
+    background: rgba(255,255,255,.95);
+    box-shadow:
+            inset 0 0 0 1px rgba(184,46,46,.45),
+            0 10px 22px rgba(0,0,0,.16);
+}
+
+.omikuji-btn:active{
+    transform: translateY(1px);
+    box-shadow:
+            inset 0 0 0 1px rgba(184,46,46,.55),
+            0 4px 10px rgba(0,0,0,.18);
+}
+
+/* Desktop */
+@media (min-width: 768px){
+    .omikuji-actions{
+        padding: 14px 16px 18px;
+    }
+    .omikuji-btn{
+        font-size: 13px;
+        padding: 9px 16px;
+    }
+}
+
 
 
