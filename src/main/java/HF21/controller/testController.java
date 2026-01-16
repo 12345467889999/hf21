@@ -1,6 +1,7 @@
 package HF21.controller;
 
 
+import HF21.handler.WallWsHandler;
 import HF21.service.OmikujiService;
 import HF21.vo.HttpResult;
 import HF21.vo.OmikujiResult;
@@ -21,6 +22,13 @@ public class testController {
 
     @Resource
     private OmikujiService omikujiService;
+
+
+    private final WallWsHandler wallWsHandler;
+
+    public testController(WallWsHandler wallWsHandler) {
+        this.wallWsHandler = wallWsHandler;
+    }
 
     @PostMapping("/draw")
     public HttpResult<OmikujiResult> draw() {
@@ -52,19 +60,24 @@ public class testController {
 
 
     /**
-     * 根据 id 将签标记为「系上签」
+     * 根据 id 将签标记为「系上签」 + 广播给墙
      */
     @PostMapping("/musubu/{id}")
-    public HttpResult<Void> markAsLucky(@PathVariable Integer id) {
+    public HttpResult<Void> musubu(@PathVariable Integer id) {
 
         boolean success = omikujiService.markAsLuckyById(id);
-
         if (!success) {
             return HttpResult.error("error");
         }
 
+        // 推送给墙：告诉它新增了一条已结签
+        wallWsHandler.broadcastJson("{\"type\":\"MUSUBU\",\"id\":" + id + "}");
+
+        System.out.println("hello,world");
+
         return HttpResult.success("結ばれた", null);
     }
+
 
     /**
      * 获取所有「系上签」的 id
@@ -76,4 +89,21 @@ public class testController {
 
         return HttpResult.success("success", ids);
     }
+
+
+
+
+    @GetMapping("/musubu/{id}")
+    public HttpResult<OmikujiResult> getMusubaredOmikuji(@PathVariable Integer id) {
+
+        OmikujiResult result = omikujiService.getMusubaredOmikujiById(id);
+
+        if (result == null) {
+            return HttpResult.error("NOT_MUSUBARED");
+        }
+
+        return HttpResult.success("success", result);
+    }
+
+
 }

@@ -30,4 +30,8 @@ public interface OmikujiService extends IService<OmikujiRecord> {
      * @return 系上签的 id 集合
      */
     List<Integer> getLuckyOmikujiIds();
+
+
+    OmikujiResult getMusubaredOmikujiById(Integer id);
+
 }

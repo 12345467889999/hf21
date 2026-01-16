@@ -3,135 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="index.css">
+    <link rel="stylesheet" type="text/css" href="index2.css">
     <title>HF DEMO</title>
 </head>
 <body>
 
-    <input type="hidden" class="omikujiJson" value="">
-    <div class="wrap">
-        <!-- 運勢 -->
-        <div class="fortune">
-            <h1>大吉</h1>
-        </div>
-        <!-- 各項目　願事 -->
-        <div class="wish">
-            <h2>願い事</h2>
-            <p>望みは急ぎて叶わずとも、道は細く続きたり。志を曲げず、時を待つべし。</p>
-        </div>
-        <!-- 恋愛 -->
-        <div class="love">
-            <h2>恋愛</h2>
-            <p>思いやりの言葉、良縁を呼ぶ。心を急がせば、ささいな誤り増える。</p>
-        </div>
-        <!-- 学問 -->
-        <div class="study">
-            <h2>学問</h2>
-            <p>基礎を固めるほどに、学びは身につく。欲張らず、一つずつ積むが良し。</p>
-        </div>
-        <!-- 病気 -->
-        <div class="health">
-            <h2>病気</h2>
-            <p>無理を慎み、身をいたわれば自然と回復に向かう。小さき不調も放置せぬこと。</p>
-        </div>
-        <!-- 商売 -->
-        <div class="business">
-            <h2>商売</h2>
-            <p>誠をもって事にあたれば、利は後よりついて来る。安き儲けに心奪われるなかれ。</p>
-        </div>
-        <div class="gotouchi1">
-            <h2>ラッキースポット</h2>
-            <p>名古屋城</p>
-        </div>
-        <div class="gotouchi2">
-            <h2>ラッキーフード</h2>
-            <p>味噌カツ</p>
-        </div>
-
-        <!-- ボタン -->
-        <div class="omikuji-actions">
-            <button class="omikuji-btn tie-btn">結ぶ</button>
-            <button class="omikuji-btn save-btn">写真として保存</button>
-        </div>
-
+<input type="hidden" class="omikujiJson" value="">
+<div class="wrap">
+    <!-- 運勢 -->
+    <div class="fortune">
+        <h1>大吉</h1>
+    </div>
+    <!-- 各項目　願事 -->
+    <div class="wish">
+        <h2>願い事</h2>
+        <p>望みは急ぎて叶わずとも、道は細く続きたり。志を曲げず、時を待つべし。</p>
+    </div>
+    <!-- 恋愛 -->
+    <div class="love">
+        <h2>恋愛</h2>
+        <p>思いやりの言葉、良縁を呼ぶ。心を急がせば、ささいな誤り増える。</p>
+    </div>
+    <!-- 学問 -->
+    <div class="study">
+        <h2>学問</h2>
+        <p>基礎を固めるほどに、学びは身につく。欲張らず、一つずつ積むが良し。</p>
+    </div>
+    <!-- 病気 -->
+    <div class="health">
+        <h2>病気</h2>
+        <p>無理を慎み、身をいたわれば自然と回復に向かう。小さき不調も放置せぬこと。</p>
+    </div>
+    <!-- 商売 -->
+    <div class="business">
+        <h2>商売</h2>
+        <p>誠をもって事にあたれば、利は後よりついて来る。安き儲けに心奪われるなかれ。</p>
+    </div>
+    <div class="gotouchi1">
+        <h2>ラッキースポット</h2>
+        <p>名古屋城</p>
+    </div>
+    <div class="gotouchi2">
+        <h2>ラッキーフード</h2>
+        <p>味噌カツ</p>
     </div>
 
-    <script src="./jquery-3.7.1.min.js"></script>
+    <!-- ボタン -->
+    <div class="omikuji-actions">
+        <button class="omikuji-btn tie-btn" id="musubuBtn">結ぶ</button>
+        <button class="omikuji-btn save-btn" id="saveAsPhotoBtn">写真として保存</button>
+    </div>
 
-    <script>
-        $(document).ready(function () {
+</div>
 
-            // // // ngrok 当日にも更新が必要
-            let url = window.location.href;
-            let param = getParam();
-            let length = 17 + Number(param.length);
-            let newUrl = url.slice(0,-length);
-            let str = newUrl + "get/" + param;
+<script src="./jquery-3.7.1.min.js"></script>
+<!-- html2canvas -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-            httpRequest(str);
+<script>
+    $(document).ready(function () {
 
+        function getParam() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('key');
+        }
 
-            function getParam() {
-                const urlParams = new URLSearchParams(window.location.search);
-                return urlParams.get('key');
+        const id = getParam();
+        if (!id) {
+            alert("IDが見つかりません");
+            return;
+        }
+
+        //rootpath
+        const BASE = `${location.origin}/HF21/`;
+
+        function lockMusubuButton() {
+            $("#musubuBtn")
+                .prop("disabled", true)
+                .text("結ばれました")
+                .addClass("is-done");
+            $(".wrap").addClass("is-musubared");
+        }
+
+        // =========================
+        // 0) 本地快速恢复
+        // =========================
+        if (localStorage.getItem("musubared_" + id) === "true") {
+            lockMusubuButton();
+        }
+
+        // =========================
+        // 0.5) 后端校验
+        // 只要能 GET /musubu/{id} 成功（code=200），就说明 flag=1
+        // =========================
+        $.ajax({
+            type: "get",
+            url: BASE + `musubu/${id}`,
+            dataType: "json",
+            headers: {
+                "ngrok-skip-browser-warning": "true"
             }
-
-            function httpRequest(urlStr){
-                console.log("httpRequest start");
-                console.log(urlStr);
-                $.ajax({
-                    type: "get",
-                    url : urlStr,
-                    dataType : "json",
-                    headers:{
-                        "ngrok-skip-browser-warning": "true"
-                    }
-                }).then(
-                    function(json){
-                        jsonParse(json);
-                    },
-                    function(e){
-                        console.log(e);			
-                    }
-                );
+        }).then(
+            function (res) {
+                if (res && res.code === 200) {
+                    lockMusubuButton();
+                    localStorage.setItem("musubared_" + id, "true");
+                }
+            },
+            function () {
+                // NOT_MUSUBARED 等错误：什么都不做，保持可点
             }
-            function jsonParse(json){
-                console.log("jsonParse start");
-                    // {
-                        // "code": 200,
-                        // "msg": "success",
-                        // "data": {
-                        // "id": 1,
-                        // "rank": "吉",
-                        // "content": {
-                        // "wish": "願い事は、心を静めて待つことで、時が熟した時に叶う兆しあり。焦らず、日々の
-                        // 努力を続けることが大切です。",
-                        // "love": "愛の道は、共に過ごす時間が絆を深め、心の安らぎをもたらすでしょう。ただし、
-                        // 相手の気持ちを尊重し、思いやりを忘れぬよう心がけて。",
-                        // "study": "学問の道は、努力が実を結び、知識が次第に積み重なります。継続することで、新
-                        // たな発見があり、あなたを導くでしょう。",
-                        // "business": "商売は順調に進む兆しがありますが、新しい挑戦には慎重さが必要です。信頼
-                        // を大切にし、誠実な取引を心がけると吉。",
-                        // "health": "健康は、日常の小さな積み重ねが鍵となります。無理をせず、休息を大切にするこ
-                        // とで、心身ともに安らぎを得られるでしょう。"
-                        // },
-                        // "items": {
-                        // "luckyPlace": "徳川園",
-                        // "nagoyaFood": "小倉トースト"
-                        // }
-                        // }
-                    // }
-                json.data.rank && $(".fortune h1").text(json.data.rank);
-                json.data.content.wish && $(".wish p").text(json.data.content.wish);
-                json.data.content.love && $(".love p").text(json.data.content.love);
-                json.data.content.study && $(".study p").text(json.data.content.study); 
-                json.data.content.health && $(".health p").text(json.data.content.health);
-                json.data.content.business && $(".business p").text(json.data.content.business);
-                json.data.items.luckyPlace && $(".gotouchi1 p").text(json.data.items.luckyPlace);
-                json.data.items.nagoyaFood && $(".gotouchi2 p").text(json.data.items.nagoyaFood);
+        );
+
+        // =========================
+        // 1) 抽签内容load
+        // =========================
+        httpRequest(BASE + "get/" + id);
+
+        function httpRequest(urlStr) {
+            console.log("httpRequest start", urlStr);
+            $.ajax({
+                type: "get",
+                url: urlStr,
+                dataType: "json",
+                headers: {
+                    "ngrok-skip-browser-warning": "true"
+                }
+            }).then(
+                function (json) {
+                    jsonParse(json);
+                },
+                function (e) {
+                    console.log(e);
+                }
+            );
+        }
+
+        function jsonParse(json) {
+            console.log("jsonParse start");
+            json.data.rank && $(".fortune h1").text(json.data.rank);
+            json.data.content.wish && $(".wish p").text(json.data.content.wish);
+            json.data.content.love && $(".love p").text(json.data.content.love);
+            json.data.content.study && $(".study p").text(json.data.content.study);
+            json.data.content.health && $(".health p").text(json.data.content.health);
+            json.data.content.business && $(".business p").text(json.data.content.business);
+            json.data.items.luckyPlace && $(".gotouchi1 p").text(json.data.items.luckyPlace);
+            json.data.items.nagoyaFood && $(".gotouchi2 p").text(json.data.items.nagoyaFood);
+        }
+
+        // =========================
+        // 2) 写真として保存
+        // =========================
+        $("#saveAsPhotoBtn").on("click", async function () {
+            const target = document.querySelector(".wrap");
+            if (!target) return;
+
+            try {
+                document.body.classList.add("is-capturing");
+                await new Promise(r => setTimeout(r, 80));
+
+                const scale = Math.max(2, Math.floor(window.devicePixelRatio || 2));
+                const canvas = await html2canvas(target, {
+                    backgroundColor: "#f6f1e6",
+                    scale,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false
+                });
+
+                const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 1.0));
+                if (!blob) throw new Error("画像の生成に失敗しました");
+
+                const fileName = `omikuji_${Date.now()}.png`;
+                const file = new File([blob], fileName, { type: "image/png" });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: "おみくじ",
+                        text: "おみくじを写真として保存"
+                    });
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("保存に失敗しました。端末の設定やブラウザをご確認ください。");
+            } finally {
+                document.body.classList.remove("is-capturing");
             }
         });
-    </script>
-    
+
+        // =========================
+        // 3) 結ぶ
+        // =========================
+        $("#musubuBtn").on("click", function () {
+            // 如果已锁定（例如后端校验后锁了），直接 return
+            if ($(this).prop("disabled")) return;
+
+            const $btn = $(this);
+            $btn.prop("disabled", true).text("結び中...");
+
+            $.ajax({
+                type: "post",
+                url: BASE + `musubu/${id}`,
+                headers: {
+                    "ngrok-skip-browser-warning": "true"
+                }
+            }).then(
+                function (res) {
+                    if (res && res.code === 200) {
+                        lockMusubuButton();
+                        localStorage.setItem("musubared_" + id, "true");
+                    } else {
+                        $btn.prop("disabled", false).text("結ぶ");
+                        alert("結ぶに失敗しました");
+                    }
+                },
+                function (e) {
+                    console.log(e);
+                    $btn.prop("disabled", false).text("結ぶ");
+                    alert("通信エラー");
+                }
+            );
+        });
+
+    });
+</script>
+
 </body>
 </html>

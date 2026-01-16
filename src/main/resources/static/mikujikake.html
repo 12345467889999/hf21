@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    /* #wrapper {
+        
+    } */
+    ul {
+        width: 100vw;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    li {
+        display: flex;
+        padding: 0 18px;
+    }
+    .musubime {
+        width: 100px;
+        height: 100px;
+        z-index: 2;
+    }
+    .line {
+        width: 100%;
+        height: 5px;
+        background-color: #ddd;
+        position: relative;
+        top: 50px;
+    }
+</style>
+
+<body>
+<!--    <input type="text" class="testInput" placeholder="URLを入力">-->
+    <!-- <button class="testBtn2">おみくじを結ぶ</button> -->
+    <button class="testBtn3">websocket 開始</button>
+    <p id="status">webSocket待機中</p>
+    <div id="wrapper">
+        <ul>
+            <div class="line"></div>
+            <li>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+            </li>
+            <div class="line"></div>
+            <li>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+            </li>
+            <div class="line"></div>
+            <li>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+            </li>
+            <div class="line"></div>
+            <li>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+                <div class="musubime"></div>
+            </li>
+        </ul>
+
+    </div>
+    <script src="jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            // ===============================
+            // WebSocket 启动
+            // ===============================
+            $(".testBtn3").on("click", function () {
+                initWall();
+            });
+
+            async function initWall() {
+                $("#status").text("履歴取得中…");
+
+                try {
+                    const resp = await fetch(`${location.origin}/HF21/musubu/ids`, {
+                        headers: { "ngrok-skip-browser-warning": "true" }
+                    });
+                    const json = await resp.json();
+
+                    if (json && json.code === 200 && Array.isArray(json.data)) {
+                        json.data.forEach(id => musubu({ id }));
+                        $("#status").text(`履歴 ${json.data.length} 件表示済み / WebSocket 接続中…`);
+                    } else {
+                        $("#status").text("履歴なし / WebSocket 接続中…");
+                    }
+
+                } catch (e) {
+                    console.error(e);
+                    $("#status").text("履歴取得失敗 / WebSocket 接続中…");
+                }
+
+                // 👇 一定要在历史渲染之后
+                WebSocketStart();
+            }
+
+            function WebSocketStart() {
+                const protocol = location.protocol === "https:" ? "wss" : "ws";
+                const wsUrl = `${protocol}://${location.host}/HF21/ws/wall`;
+
+                console.log("WS connect:", wsUrl);
+                $("#status").text("WebSocket 接続中…");
+
+                const ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    $("#status").text("WebSocket 接続成功");
+                };
+
+                ws.onmessage = function (event) {
+                    // 后端发送： {"type":"MUSUBU","id":123}
+                    const msg = JSON.parse(event.data);
+
+                    if (msg.type === "MUSUBU") {
+                        musubu({ id: msg.id });
+                        $("#status").text("おみくじを結びました");
+                    }
+                };
+
+                ws.onerror = () => {
+                    $("#status").text("WebSocket エラー");
+                };
+
+                ws.onclose = () => {
+                    $("#status").text("WebSocket 切断");
+                };
+            }
+
+            // ===============================
+            // 结签渲染
+            // ===============================
+            function musubu(data) {
+                if (!data || !data.id) return;
+
+                const directions = [
+                    '0deg', '45deg', '90deg', '135deg',
+                    '180deg', '225deg', '270deg', '315deg'
+                ];
+                const rotate = directions[Math.floor(Math.random() * directions.length)];
+                const imgNum = Math.floor(Math.random() * 10) + 1;
+
+                const index = musubimeCount() + 1;
+                const target = $(`.musubime${index}`);
+                if (target.length === 0) return;
+
+                const html = `
+            <div class="checked omikujiId${data.id}"
+                 style="transform: rotate(${rotate});">
+                <img src="/omikujiPic/omikuji${imgNum}.png"
+                     width="100" height="100">
+            </div>
+        `;
+                target.html(html);
+            }
+
+            // ===============================
+            // 已结数量
+            // ===============================
+            function musubimeCount() {
+                return $(".checked").length;
+            }
+
+            // ===============================
+            // 随机打散位置（原逻辑保留）
+            // ===============================
+            function musubimeRandom() {
+                const elements = $(".musubime");
+                const nums = [...Array(elements.length).keys()].map(i => i + 1);
+
+                for (let i = nums.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [nums[i], nums[j]] = [nums[j], nums[i]];
+                }
+
+                elements.each(function (i) {
+                    $(this).addClass(`musubime${nums[i]}`);
+                });
+            }
+
+            musubimeRandom();
+
+            // ===============================
+            // 点击已结签 → 打开详情
+            // ===============================
+            $(document).on("click", ".checked", function () {
+                const cls = $(this).attr("class").split(" ");
+                const idCls = cls.find(c => c.startsWith("omikujiId"));
+                if (!idCls) return;
+
+                const id = idCls.replace("omikujiId", "");
+                const url = `${location.origin}/HF21/Omikuji.html?key=${id}`;
+                window.open(url, "_blank");
+            });
+
+        });
+    </script>
+
+</body>
+
+</html>

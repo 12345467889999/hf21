@@ -10,6 +10,7 @@ import HF21.service.OmikujiService;
 import HF21.utils.OmikujiUtil;
 import HF21.utils.RandomPoolUtils;
 import HF21.vo.OmikujiResult;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
@@ -127,5 +128,46 @@ public class OmikujiServiceImpl
                 .map(OmikujiRecord::getId)
                 .collect(Collectors.toList());
     }
+
+    public OmikujiResult getMusubaredOmikujiById(Integer id) {
+
+        // 1️⃣ 只查 flag = 1 的记录
+        OmikujiRecord record = this.getOne(
+                Wrappers.lambdaQuery(OmikujiRecord.class)
+                        .eq(OmikujiRecord::getId, id)
+                        .eq(OmikujiRecord::getFlag, 1)
+                        .last("LIMIT 1"),
+                false
+        );
+
+        if (record == null) {
+            return null;
+        }
+
+        // 2️⃣ 组装 OmikujiContent
+        OmikujiContent content = new OmikujiContent(
+                record.getWish(),
+                record.getLove(),
+                record.getStudy(),
+                record.getBusiness(),
+                record.getHealth()
+        );
+
+        // 3️⃣ 组装 OmikujiLuckyItem
+        OmikujiLuckyItem luckyItem = new OmikujiLuckyItem(
+                record.getLuckyPlace(),
+                record.getNagoyaFood()
+        );
+
+        // 4️⃣ 组装 OmikujiResult
+        OmikujiResult result = new OmikujiResult();
+        result.setId(record.getId());
+        result.setRank(record.getRank());
+        result.setContent(content);
+        result.setItems(luckyItem);
+
+        return result;
+    }
+
 
 }

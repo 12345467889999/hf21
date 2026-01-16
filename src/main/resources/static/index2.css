@@ -207,7 +207,7 @@ p{
 
 /* =========================
    Mobile演出：fade-up
-   Append to the end of index.css
+   Append to the end of index2.css
    ========================= */
 
 /* --- Fade-up animation --- */
@@ -305,7 +305,6 @@ p{
     }
     body{
         padding-bottom: 15px;
-        margin-bottom: 15px;
     }
 
     .gotouchi2{
@@ -397,6 +396,13 @@ p{
             0 4px 10px rgba(0,0,0,.18);
 }
 
+.omikuji-btn.is-done{
+    background: rgba(230,230,230,.9);
+    color: #777;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
 /* Desktop */
 @media (min-width: 768px){
     .omikuji-actions{
@@ -410,3 +416,15 @@ p{
 
 
 
+/* =========================
+   Capture mode (for saving as photo)
+   ========================= */
+body.is-capturing .omikuji-actions{
+    display: none !important;
+}
+
+body.is-capturing .wrap > div{
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+}
