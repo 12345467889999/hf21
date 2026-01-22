@@ -71,7 +71,7 @@ public class testController {
         }
 
         // 推送给墙：告诉它新增了一条已结签
-        wallWsHandler.broadcastJson("{\"type\":\"MUSUBU\",\"id\":" + id + "}");
+        wallWsHandler.broadcastJson("{\"type\":\"MUSUBU\",\"id\":" + id + ",\"latest\":true}");
 
         System.out.println("hello,world");
 

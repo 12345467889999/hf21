@@ -19,11 +19,22 @@ public class OmikujiResult {
     //幸运地点和食物
     private OmikujiLuckyItem items;
 
-    public OmikujiResult(Integer id ,String rank, OmikujiContent content, OmikujiLuckyItem items) {
+    private String color ;
+
+    public OmikujiResult(Integer id ,String rank, OmikujiContent content, OmikujiLuckyItem items,String color) {
         this.id = id;
         this.rank = rank;
         this.content = content;
         this.items = items;
+        this.color = color;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     public Integer getId() {
@@ -61,6 +72,7 @@ public class OmikujiResult {
         this.items = items;
     }
 
+
     @Override
     public String toString() {
         return "OmikujiResult{" +
@@ -68,6 +80,7 @@ public class OmikujiResult {
                 ", rank='" + rank + '\'' +
                 ", content=" + content +
                 ", items=" + items +
+                ", color='" + color + '\'' +
                 '}';
     }
 }

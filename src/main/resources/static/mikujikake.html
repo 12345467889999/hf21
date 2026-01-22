@@ -3,47 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>みくじ掛け</title>
+    <link rel="stylesheet" type="text/css" href="musubikake1.css">
 </head>
 
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-    }
-    /* #wrapper {
-        
-    } */
-    ul {
-        width: 100vw;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-    }
-    li {
-        display: flex;
-        padding: 0 18px;
-    }
-    .musubime {
-        width: 100px;
-        height: 100px;
-        z-index: 2;
-    }
-    .line {
-        width: 100%;
-        height: 5px;
-        background-color: #ddd;
-        position: relative;
-        top: 50px;
-    }
-</style>
-
 <body>
-<!--    <input type="text" class="testInput" placeholder="URLを入力">-->
-    <!-- <button class="testBtn2">おみくじを結ぶ</button> -->
-    <button class="testBtn3">websocket 開始</button>
-    <p id="status">webSocket待機中</p>
-    <div id="wrapper">
+<div id="toast" class="toast" aria-live="polite"></div>
+
+<div id="wrapper">
+
+    <!-- ===== タイトル ===== -->
+    <div class="kake-header">
+        <div class="kake-title">みくじ掛け</div>
+        <div class="kake-sub">結ばれたおみくじ</div>
+    </div>
         <ul>
             <div class="line"></div>
             <li>
@@ -54,6 +27,7 @@
                 <div class="musubime"></div>
                 <div class="musubime"></div>
                 <div class="musubime"></div>
+
                 <div class="musubime"></div>
                 <div class="musubime"></div>
                 <div class="musubime"></div>
@@ -124,16 +98,18 @@
     <script>
         $(document).ready(function () {
 
-            // ===============================
-            // WebSocket start
-            // ===============================
-            $(".testBtn3").on("click", function () {
-                initWall();
-            });
+
+            let toastTimer = null;
+
+            function showToast(text, ms = 1800){
+                const $t = $("#toast");
+                $t.text(text).addClass("is-show");
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => $t.removeClass("is-show"), ms);
+            }
 
             async function initWall() {
-                $("#status").text("履歴取得中…");
-
+                showToast("履歴取得中…", 1200);
                 try {
                     const resp = await fetch(`${location.origin}/HF21/musubu/ids`, {
                         headers: { "ngrok-skip-browser-warning": "true" }
@@ -142,51 +118,108 @@
 
                     if (json && json.code === 200 && Array.isArray(json.data)) {
                         json.data.forEach(id => musubu({ id }));
-                        $("#status").text(`履歴 ${json.data.length} 件表示済み / WebSocket 接続中…`);
+                        showToast(`履歴 ${json.data.length} 件表示済み`, 1600);
                     } else {
-                        $("#status").text("履歴なし / WebSocket 接続中…");
+                        showToast("履歴なし", 1600);
                     }
 
                 } catch (e) {
                     console.error(e);
-                    $("#status").text("履歴取得失敗 / WebSocket 接続中…");
+                    showToast("履歴取得失敗", 1800);
                 }
 
-                // 👇 一定要在历史渲染之后
                 WebSocketStart();
             }
 
+            let ws = null;
+            let reconnectTimer = null;
+            let connecting = false;
+
             function WebSocketStart() {
+                if (connecting) return; // 防止并发重连
+                connecting = true;
+
                 const protocol = location.protocol === "https:" ? "wss" : "ws";
-                const wsUrl = `${protocol}://${location.host}/HF21/ws/wall`;
+                const wsUrl = `${protocol}://${location.host}/HF21/ws/wall?ngrok-skip-browser-warning=true`;
+
+                // 如果之前还有连接，先关掉
+                try {
+                    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+                        ws.close();
+                    }
+                } catch (e) {}
 
                 console.log("WS connect:", wsUrl);
-                $("#status").text("WebSocket 接続中…");
+                showToast("WebSocket 接続中…", 1000);
 
-                const ws = new WebSocket(wsUrl);
+                ws = new WebSocket(wsUrl);
 
                 ws.onopen = () => {
-                    $("#status").text("WebSocket 接続成功");
+                    connecting = false;
+                    clearTimeout(reconnectTimer);
+                    showToast("WebSocket 接続成功", 1200);
                 };
 
-                ws.onmessage = function (event) {
-                    // 后端发送： {"type":"MUSUBU","id":123}
-                    const msg = JSON.parse(event.data);
-
+                ws.onmessage = (event) => {
+                    let msg;
+                    try {
+                        msg = JSON.parse(event.data);
+                    } catch (e) {
+                        return;
+                    }
                     if (msg.type === "MUSUBU") {
                         musubu({ id: msg.id });
-                        $("#status").text("おみくじを結びました");
+
+                        // 清掉旧的“最新”标记
+                        $(".checked").removeClass("is-latest");
+
+                        // 给新来的这条加标记（musubu 已经把它塞进某个格子了）
+                        $(`.omikujiId${msg.id}`).addClass("is-latest");
+
+                        showToast("新しいおみくじ +1", 900);
                     }
                 };
 
                 ws.onerror = () => {
-                    $("#status").text("WebSocket エラー");
+
                 };
 
                 ws.onclose = () => {
-                    $("#status").text("WebSocket 切断");
+                    connecting = false;
+                    showToast("WebSocket 切断（再接続中…）", 1200);
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = setTimeout(WebSocketStart, 1000);
                 };
             }
+
+
+            // ===============================
+            // 满墙时：替换最旧的签
+            // ===============================
+            function replaceOldestSlotWith(html) {
+                let minId = Infinity;
+                let $minEl = null;
+
+                $(".checked").each(function () {
+                    const cls = this.className.split(/\s+/);
+                    const idCls = cls.find(c => c.startsWith("omikujiId"));
+                    if (!idCls) return;
+
+                    const id = parseInt(idCls.replace("omikujiId", ""), 10);
+                    if (!Number.isNaN(id) && id < minId) {
+                        minId = id;
+                        $minEl = $(this);
+                    }
+                });
+
+                if ($minEl) {
+                    // 替换它所在的 musubime 格子内容
+                    $minEl.parent().html(html);
+                    return true;
+                }
+                return false;
+            }
+
 
             // ===============================
             // 结签渲染
@@ -194,26 +227,48 @@
             function musubu(data) {
                 if (!data || !data.id) return;
 
+                const id = parseInt(data.id, 10);
+                if (Number.isNaN(id)) return;
+
+                // 1) 如果这张签已经在墙上，就不重复塞（避免 ws 重连/历史重复）
+                if ($(`.omikujiId${id}`).length > 0) {
+                    return $(`.omikujiId${id}`);
+                }
+
                 const directions = [
-                    '0deg', '45deg', '90deg', '135deg',
-                    '180deg', '225deg', '270deg', '315deg'
+                    "0deg", "45deg", "90deg", "135deg",
+                    "180deg", "225deg", "270deg", "315deg"
                 ];
                 const rotate = directions[Math.floor(Math.random() * directions.length)];
                 const imgNum = Math.floor(Math.random() * 10) + 1;
 
-                const index = musubimeCount() + 1;
-                const target = $(`.musubime${index}`);
-                if (target.length === 0) return;
-
                 const html = `
-            <div class="checked omikujiId${data.id}"
-                 style="transform: rotate(${rotate});">
-                <img src="/omikujiPic/omikuji${imgNum}.png"
-                     width="100" height="100">
-            </div>
-        `;
-                target.html(html);
+                      <div class="checked omikujiId${id}">
+                        <div class="knot" style="transform: rotate(${rotate});">
+                          <img src="/HF21/omikujiPic/omikuji${imgNum}.png" width="100" height="100">
+                        </div>
+                      </div>
+                    `;
+
+
+                // 2) 先尝试塞到下一个空位
+                const index = musubimeCount() + 1;
+                const $target = $(`.musubime${index}`);
+
+                if ($target.length > 0) {
+                    $target.html(html);
+                    return $target.find(`.omikujiId${id}`);
+                }
+
+                // 3) 墙满了：替换最旧（id 最小）的那张
+                const ok = replaceOldestSlotWith(html);
+                if (ok) {
+                    return $(`.omikujiId${id}`);
+                }
+
+
             }
+
 
             // ===============================
             // 已结数量
@@ -253,6 +308,8 @@
                 const url = `${location.origin}/HF21/Omikuji.html?key=${id}`;
                 window.open(url, "_blank");
             });
+
+            initWall();
 
         });
     </script>

@@ -1,0 +1,290 @@
+
+
+:root{
+    --bg: #f6f1e6;
+    --ink: #2b2b2b;
+    --red: #b82e2e;
+    --paper: rgba(255,255,255,.75);
+    --shadow: 0 14px 38px rgba(0,0,0,.12);
+    --line: rgba(180, 165, 140, 0.92);
+    --radius: 18px;
+    --rope-thickness: 4px;   /* 单根绳的粗细 */
+    --rope-gap: 3.2em;       /* 两根绳的间距（相对字体/屏幕） */
+
+}
+
+*{ box-sizing: border-box; }
+html, body{ height: 100%; }
+
+body{
+    margin: 0;
+    min-height: 100vh;
+    padding: 42px 22px 28px;
+    background:
+            radial-gradient(1200px 600px at 20% -10%, rgba(214,177,94,.16), transparent 60%),
+            radial-gradient(900px 500px at 110% 10%, rgba(184,46,46,.10), transparent 60%),
+            linear-gradient(180deg, var(--bg), #efe7d8);
+    color: var(--ink);
+    font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+}
+
+/* subtle paper noise */
+body::before{
+    content:"";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(rgba(0,0,0,.035) 1px, transparent 1px);
+    background-size: 22px 22px;
+    opacity: .22;
+}
+
+.kake-header{
+    position: relative;
+    padding: 22px 18px 18px;
+    text-align: center;
+    background:
+            linear-gradient(
+                    180deg,
+                    rgba(255,255,255,.85),
+                    rgba(255,255,255,.55)
+            );
+    border-bottom: 2px solid rgba(217,210,198,.9);
+}
+
+/* 中央标题 */
+.kake-title{
+    font-size: clamp(20px, 3.2vw, 28px);
+    letter-spacing: .32em;
+    color: var(--red);
+    font-weight: 700;
+    text-shadow:
+            0 1px 0 rgba(255,255,255,.7),
+            0 8px 20px rgba(184,46,46,.18);
+}
+
+/* 副标题 */
+.kake-sub{
+    margin-top: 6px;
+    font-size: 13px;
+    letter-spacing: .12em;
+    color: #666;
+}
+
+/* 顶部装饰绳感 */
+.kake-header::before{
+    content:"";
+    position:absolute;
+    left: 50%;
+    top: 0;
+    width: 160px;
+    height: 6px;
+    transform: translateX(-50%);
+    border-radius: 0 0 6px 6px;
+    background: linear-gradient(
+            90deg,
+            rgba(184,46,46,.9),
+            rgba(214,177,94,.9),
+            rgba(184,46,46,.9)
+    );
+}
+
+/* 展示舞台（wrapper） */
+#wrapper{
+    width: min(1500px, 100%);
+    margin: 0 auto;
+    padding-top: 6px;
+    min-height: calc(100vh - 70px);
+    background: var(--paper);
+    backdrop-filter: blur(6px);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(217,210,198,.9);
+    overflow: hidden;
+    position: relative;
+}
+
+/* 顶部装饰条（和你签页统一风格） */
+#wrapper::before{
+    content:"";
+    position:absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 10px;
+    background: linear-gradient(90deg, rgba(184,46,46,.92), rgba(214,177,94,.92), rgba(184,46,46,.92));
+    z-index: 1;
+}
+
+ul{
+    width: 100%;
+    list-style: none;
+    margin: 0;
+    padding: 28px 22px 26px;
+    position: relative;
+    z-index: 2;
+}
+
+/* 每一行：用 grid 自适应，4K 不会拉得很散 */
+li{
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 100px);
+    gap: 14px;
+    justify-content: center;
+    padding: 18px 0;
+}
+
+li::before,
+li::after{
+    content:"";
+    position:absolute;
+    left: 22px;
+    right: 22px;
+    height: var(--rope-thickness);
+    border-radius: 999px;
+    background: linear-gradient(
+            90deg,
+            rgba(0,0,0,0) 0%,
+            var(--line) 18%,
+            var(--line) 82%,
+            rgba(0,0,0,0) 100%
+    );
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* 上绳 */
+li::before{
+    transform: translateY(calc(
+            -50% - var(--rope-gap)
+    ));
+}
+
+/* 下绳 */
+li::after{
+    transform: translateY(calc(
+            -50% + var(--rope-gap)
+    ));
+}
+
+
+
+/* 原来的 .line 直接隐藏即可（HTML 不改也没关系） */
+.line{ display: none; }
+
+.musubime{
+    width: 100px;
+    height: 100px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+}
+
+/* 结び目 hover 演出 */
+.checked{
+    cursor: pointer;
+    transition: transform .18s ease, filter .18s ease;
+    will-change: transform;
+    position: relative; /* 角标定位 */
+}
+
+.checked:hover{
+    transform: translateY(-2px) scale(1.02);
+    filter: drop-shadow(0 10px 14px rgba(0,0,0,.18));
+}
+.checked:active{
+    transform: translateY(-1px) scale(1.01);
+}
+
+/* 最新一张：更明显的阴影与高亮 */
+.checked.is-latest{
+    filter: drop-shadow(0 14px 18px rgba(0,0,0,.22));
+}
+.checked.is-latest:hover{
+    filter: drop-shadow(0 16px 20px rgba(0,0,0,.24));
+}
+
+/* NEW 角标（不会旋转的前提：旋转不在 .checked 上） */
+.checked.is-latest::after{
+    content: "NEW";
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--red);
+    color: #fff;
+    font-size: 12px;
+    letter-spacing: .08em;
+    box-shadow: 0 10px 18px rgba(184,46,46,.22);
+}
+
+/* 金色描边感 */
+.checked.is-latest img{
+    border-radius: 14px;
+    outline: 3px solid rgba(214,177,94,.95);
+    outline-offset: 3px;
+}
+
+/* 旋转放到 .knot 上 */
+.checked .knot{
+    width: 100px;
+    height: 100px;
+    display: grid;
+    place-items: center;
+}
+.checked .knot img{
+    display: block;
+}
+
+
+
+
+/* Toast message (top-right style) */
+.toast{
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 9999;
+
+    max-width: min(360px, calc(100vw - 28px));
+    padding: 10px 14px;
+    border-radius: 12px;
+
+    background: rgba(30,30,30,.78);
+    color: #fff;
+    font-size: 13px;
+    letter-spacing: .04em;
+
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity .25s ease, transform .25s ease;
+}
+.toast.is-show{
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 手机端：减少 padding，留足屏幕空间 */
+@media (max-width: 767px){
+    body{ padding: 18px 10px 18px; }
+    ul{ padding: 18px 12px 16px; }
+    li{ gap: 10px; padding: 14px 0; }
+    li::before{ left: 10px; right: 10px; }
+}
+
+
+/* 手机端稍微紧凑一点 */
+@media (max-width: 767px){
+    .kake-header{
+        padding: 16px 12px 14px;
+    }
+    .kake-sub{
+        font-size: 12px;
+    }
+}
+
+

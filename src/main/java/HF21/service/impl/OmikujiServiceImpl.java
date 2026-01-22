@@ -68,8 +68,27 @@ public class OmikujiServiceImpl
         this.save(record);
         Integer id = record.getId();
 
+        //根据签的rank获取颜色css代码
+        String color;
+
+        switch (rank.getLabel()) {
+            case "大吉":
+            case "末吉":
+            case "中吉":
+            case "小吉":
+            case "吉":
+                color = "#B82E2E";
+                break;
+            case "凶":
+            case "大凶":
+                color = "#412166";
+                break;
+            default:
+                color = "#5B5B5B";
+        }
+
         // 5. 返回结果
-        return new OmikujiResult(id, rank.getLabel(), content, omikujiLuckyItem);
+        return new OmikujiResult(id, rank.getLabel(), content, omikujiLuckyItem, color);
     }
 
     @Override
